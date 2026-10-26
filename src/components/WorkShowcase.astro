@@ -63,17 +63,11 @@ const PLACEHOLDER_SLOTS = 8;
     <div class="min-w-0">
       {sites.map((site, i) => (
         <div data-site={site.slug} class:list={[i !== 0 && 'hidden']}>
+          {/* No caption: the site list beside the frame already names the
+              active site, and the address pill shows its host. */}
           <BrowserFrame host={site.host} slug={site.slug} pages={site.pages} height="34rem">
             <SitePreview site={site} />
           </BrowserFrame>
-          <p class="mt-3 text-sm opacity-60">
-            <span class="font-medium opacity-100">{site.name}</span>
-            {site.source === 'demo' && (
-              <span class="ml-2 border border-current/40 px-1.5 py-0.5 text-[0.625rem] uppercase tracking-wide">
-                demo
-              </span>
-            )}
-          </p>
         </div>
       ))}
     </div>
