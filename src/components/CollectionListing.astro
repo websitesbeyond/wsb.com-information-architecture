@@ -16,7 +16,7 @@ const items = (await getCollection(collection)).sort((a, b) => a.data.order - b.
 ---
 <Section first={true}>
   <h1 class="text-4xl font-bold mb-4">{title}</h1>
-  {intro && <p class="opacity-70 max-w-prose">{intro}</p>}
+  {intro && <p class="opacity-70 text-xl">{intro}</p>}
 </Section>
 
 <Section>
@@ -26,7 +26,7 @@ const items = (await getCollection(collection)).sort((a, b) => a.data.order - b.
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
         <Card title={item.data.title}>
-          {item.data.summary && <p class="opacity-70 text-sm mb-2">{item.data.summary}</p>}
+          {item.data.summary && <p class="opacity-70 text-base mb-2">{item.data.summary}</p>}
           <a href={url(`${basePath}/${item.id}`)} class="text-sm underline underline-offset-4">
             View →
           </a>

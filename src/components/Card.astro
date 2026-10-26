@@ -8,7 +8,9 @@ interface Props {
   feature?: boolean;
 }
 const { title, titleHtml, feature = false } = Astro.props;
-const headingClass = ['font-bold mb-2', feature ? 'text-2xl sm:text-3xl' : ''];
+// Standard card titles need an explicit size — without one they inherit 16px and
+// sit at the same scale as their own body copy, which flattens the hierarchy.
+const headingClass = ['font-bold mb-2', feature ? 'text-2xl sm:text-3xl' : 'text-xl'];
 ---
 <div class:list={['border border-current', feature ? 'p-8 sm:p-10' : 'p-6']}>
   {titleHtml ? (

@@ -1,0 +1,11 @@
+{
+  "name": "Northgate Law Group",
+  "slug": "northgatelegal",
+  "host": "northgatelegal.com",
+  "source": "demo",
+  "captureWidth": 1440,
+  "capturedAt": "2026-10-25",
+  "pages": [
+    { "label": "Home", "path": "/" }
+  ]
+}

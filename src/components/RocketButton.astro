@@ -1,0 +1,25 @@
+---
+// Primary CTA button with a rocket icon.
+//
+// Plain Tailwind, no animation. The icon comes from Lucide via astro-icon, so
+// it can be swapped for any other by changing the name.
+import { Icon } from 'astro-icon/components';
+import { url } from '../lib/url';
+
+interface Props {
+  label: string;
+  href: string;
+  class?: string;
+}
+const { label, href, class: className = '' } = Astro.props;
+---
+<a
+  href={url(href)}
+  class:list={[
+    'inline-flex items-center gap-2.5 border border-current bg-black px-5 py-2.5 font-medium text-white dark:bg-white dark:text-black',
+    className,
+  ]}
+>
+  {label}
+  <Icon name="lucide:rocket" width="18" height="18" aria-hidden="true" />
+</a>

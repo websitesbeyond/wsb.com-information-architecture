@@ -16,7 +16,7 @@ const { Content } = await render(item);
   <Section first={true}>
     <a href={url('/projects')} class="text-sm underline underline-offset-4 opacity-70">← Projects</a>
     <h1 class="text-4xl font-bold mt-4 mb-4">{item.data.title}</h1>
-    <div class="prose-wireframe max-w-prose opacity-80">
+    <div class="prose-wireframe">
       <Content />
     </div>
   </Section>

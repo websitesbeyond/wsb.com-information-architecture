@@ -2,10 +2,6 @@
 page: home
 order: 2
 heading: Welcome to Websites Beyond
-buttons:
-  - label: Our Mission
-    href: /mission
-    style: secondary
 ---
 
-Websites Beyond powers the local service providers that keep our communities running online. We build and manage the web foundations that connect our neighbors with service professionals when it matters most.
+We are a web solutions company that builds high quality software systems and provides fully managed services to support them. Every web product has a mission it is serving, and our guiding compass is the success of that mission. Our team was built to turn ambitious dreams into reality through web technology — fueling our partners to reach their potential and beyond.

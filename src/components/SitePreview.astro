@@ -1,0 +1,108 @@
+---
+// Renders a curated static mirror inside a BrowserFrame.
+//
+// The iframe's width is pinned to the mirror's `captureWidth` (1440px), so the
+// document gets a genuine desktop layout viewport — desktop media queries match
+// and `vw` units resolve against 1440. The whole iframe is then scaled down
+// geometrically to fit the frame. Shrinking the frame instead would trigger the
+// site's tablet/mobile CSS, which is the one thing we must not do.
+//
+// Height is the frame's height divided by the scale, so the iframe gets a real
+// viewport *shorter than the page* and therefore **scrolls itself**. No content
+// measuring, no height in the manifest: the wheel just works, `position:sticky`
+// behaves, and scroll-triggered animations actually fire.
+//
+// See notes/mirror-architecture.md — including why the scale factor comes from
+// JS rather than `calc(100cqw / 1440px)`.
+import type { ShowcaseSite } from '../data/showcase';
+import { pageUrl } from '../data/showcase';
+
+interface Props {
+  site: ShowcaseSite;
+}
+const { site } = Astro.props;
+
+const first = site.pages[0];
+---
+<div
+  class="site-preview"
+  data-preview
+  data-viewport-width={site.captureWidth}
+  style={`--preview-width:${site.captureWidth}px`}
+>
+  {/* The mirror is ours and same-origin, so interaction is live — that's the
+      point. `sandbox` is belt-and-braces on the curation rules: with neither
+      `allow-forms` nor `allow-popups`, nothing can submit or open a window even
+      if a clone slips through with a live form. `allow-scripts` keeps
+      accordions and inert.js working. */}
+  <iframe
+    src={pageUrl(site.slug, first.path)}
+    title={`${site.name} — ${first.label}`}
+    loading="lazy"
+    data-mirror-frame
+    sandbox="allow-scripts allow-same-origin"
+  ></iframe>
+</div>
+
+<style>
+  /* CSS owns the geometry. JS sets only `--preview-scale`. */
+  .site-preview {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #fff;
+    /* Until measured, the frame would render at 1:1 and overflow. Hide the
+       first paint rather than flash a clipped desktop layout. */
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .site-preview[data-fitted] {
+    opacity: 1;
+  }
+
+  .site-preview iframe {
+    position: absolute;
+    top: 0;
+    display: block;
+    border: 0;
+    width: var(--preview-width);
+    /* Percentage ÷ number is a percentage — valid everywhere, no container
+       query units needed. This is what gives the iframe its own scrollable
+       viewport. */
+    height: calc(100% / var(--preview-scale, 1));
+    /* Anchored to the top *centre* so that when the scale is capped at 1 — an
+       expanded frame wider than 1440px — the slack falls evenly either side
+       instead of all on the right. At any smaller scale the scaled width
+       equals the container exactly, so centring is a no-op. */
+    left: 50%;
+    margin-left: calc(var(--preview-width) * -0.5);
+    transform-origin: top center;
+    transform: scale(var(--preview-scale, 1));
+  }
+</style>
+
+<script>
+  // Supply the one number CSS can't portably derive: containerWidth / captureWidth.
+  // See notes/mirror-architecture.md for the Firefox gap that makes this necessary.
+  function fit(box: HTMLElement) {
+    const width = Number(box.dataset.viewportWidth);
+    if (!width || !box.clientWidth) return;
+
+    // Capped at 1: a frame wider than the mirror's capture width (an expanded
+    // frame on a large display, say) would otherwise upscale a 1440px design
+    // and just render it larger than built. At 1:1 the site appears exactly as
+    // made, with the slack left as margin — what a real browser would show.
+    box.style.setProperty('--preview-scale', String(Math.min(box.clientWidth / width, 1)));
+    box.dataset.fitted = '';
+  }
+
+  const observer = new ResizeObserver((entries) => {
+    for (const entry of entries) fit(entry.target as HTMLElement);
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-preview]').forEach((box) => {
+    fit(box);
+    observer.observe(box);
+  });
+</script>

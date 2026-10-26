@@ -1,0 +1,13 @@
+{
+  "name": "Summit Peak Heating & Air",
+  "slug": "summitpeakhvac",
+  "host": "summitpeakhvac.com",
+  "source": "demo",
+  "captureWidth": 1440,
+  "capturedAt": "2026-10-25",
+  "pages": [
+    { "label": "Home", "path": "/" },
+    { "label": "AC Repair", "path": "/ac-repair/" },
+    { "label": "Contact", "path": "/contact/" }
+  ]
+}

@@ -1,0 +1,185 @@
+---
+// A minimal macOS-style browser frame around a site preview.
+//
+// Deliberate palette exception: the three window dots are the real red/yellow/
+// green. Everything else stays black and white so the frame reads as chrome and
+// the site inside carries the color.
+//
+// The chrome bar carries two controls, both of which read as parts of a browser
+// rather than bolted-on UI: the address pill, which doubles as the **page
+// selector** — the only way to move between pages, since links inside a mirror
+// are inert by design — and an **expand** button on the right.
+//
+// `height` sizes the whole frame, chrome bar included. It has to live on the
+// outer element: the body is a flex child, and `flex-1` wins over a height set
+// on the body itself.
+//
+// The body never scrolls. A mirror's iframe gets its own desktop-sized viewport
+// and scrolls internally — see SitePreview.astro.
+import { pageUrl, type ShowcasePage } from '../data/showcase';
+
+interface Props {
+  host: string;
+  slug?: string;            // required if `pages` has more than one entry
+  pages?: ShowcasePage[];
+  height?: string;          // any CSS length, e.g. "34rem"
+  class?: string;
+}
+const { host, slug, pages = [], height, class: className = '' } = Astro.props;
+
+// One page is normal — a single-page mirror shows a plain address pill.
+const selectable = pages.length > 1;
+
+// Left and right chrome groups are given equal widths so the address pill
+// centres exactly between them.
+const groupWidth = 'w-[3.25rem]';
+---
+<div data-frame-backdrop class="frame-backdrop" hidden></div>
+
+<div
+  class:list={['frame border border-current overflow-hidden flex flex-col', className]}
+  style={height ? `height:${height}` : undefined}
+  data-frame
+>
+  {/* Chrome bar: traffic lights | address pill / page selector | expand. */}
+  <div class="flex items-center gap-2 px-3 py-2 border-b border-current shrink-0">
+    <span class:list={['flex gap-1.5 shrink-0', groupWidth]} aria-hidden="true">
+      <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"></span>
+      <span class="w-2.5 h-2.5 rounded-full bg-[#febc2e]"></span>
+      <span class="w-2.5 h-2.5 rounded-full bg-[#28c840]"></span>
+    </span>
+
+    <div
+      class="flex-1 min-w-0 mx-auto flex max-w-[22rem] items-center justify-center gap-1.5 truncate rounded-full border border-current/30 px-3 py-0.5 text-[0.6875rem]"
+    >
+      <span class="truncate opacity-50">{host}</span>
+      {selectable ? (
+        <>
+          <span class="opacity-30" aria-hidden="true">/</span>
+          <span class="relative inline-flex items-center">
+            {/* The option carries the resolved URL, so the client script
+                doesn't duplicate URL construction. */}
+            <select
+              data-page-select
+              aria-label={`Page — ${host}`}
+              class="peer cursor-pointer appearance-none bg-transparent pr-3.5 font-medium text-inherit opacity-80 outline-none transition-opacity hover:opacity-100 focus-visible:opacity-100"
+            >
+              {pages.map((page) => (
+                <option value={pageUrl(slug!, page.path)} class="text-black">{page.label}</option>
+              ))}
+            </select>
+            <svg
+              class="pointer-events-none absolute right-0 h-2 w-2 opacity-50 peer-hover:opacity-80"
+              viewBox="0 0 8 5"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path d="M1 1l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+            </svg>
+          </span>
+        </>
+      ) : (
+        <span class="truncate opacity-30">/</span>
+      )}
+    </div>
+
+    <span class:list={['flex shrink-0 items-center justify-end', groupWidth]}>
+      <button type="button" class="chrome-btn" data-expand-btn aria-pressed="false" title="Expand">
+        <span class="sr-only">Expand</span>
+        {/* Drawn rather than imported. */}
+        <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" class="h-3.5 w-3.5">
+          <path
+            d="M5.5 1.5h-4v4M8.5 12.5h4v-4"
+            stroke="currentColor"
+            stroke-width="1.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+    </span>
+  </div>
+
+  <div class="flex-1 min-h-0 overflow-hidden">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .chrome-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.125rem;
+    border-radius: 0.1875rem;
+    opacity: 0.35;
+    cursor: pointer;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+  }
+  .chrome-btn:hover {
+    opacity: 0.75;
+  }
+  .chrome-btn[aria-pressed='true'] {
+    opacity: 0.9;
+    background: color-mix(in oklab, currentColor 12%, transparent);
+  }
+
+  /* Expanded. A fixed overlay rather than the Fullscreen API: it behaves the
+     same everywhere including iOS Safari, and `Esc` is handled below.
+     `!important` because `height` is set inline on the frame. */
+  .frame[data-expanded] {
+    position: fixed;
+    inset: 1.5rem;
+    z-index: 50;
+    height: auto !important;
+    /* Matches the page, not the OS scheme — see `--surface` in global.css. */
+    background: var(--surface, #fff);
+    box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.35);
+  }
+
+  .frame-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(0, 0, 0, 0.55);
+  }
+  .frame-backdrop[hidden] {
+    display: none;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-frame]').forEach((frame) => {
+    // Page selector → iframe.
+    const select = frame.querySelector<HTMLSelectElement>('[data-page-select]');
+    const iframe = frame.querySelector<HTMLIFrameElement>('[data-mirror-frame]');
+    if (select && iframe) {
+      select.addEventListener('change', () => {
+        iframe.src = select.value;
+        // Keep the accessible name in step with what's displayed.
+        const label = select.options[select.selectedIndex]?.text ?? '';
+        iframe.title = iframe.title.replace(/ — .*$/, '') + ` — ${label}`;
+      });
+    }
+
+    // Expand. The ResizeObserver in SitePreview refits on the size change, so
+    // there's nothing to recalculate here.
+    const backdrop = frame.previousElementSibling as HTMLElement | null;
+    const expandBtn = frame.querySelector<HTMLButtonElement>('[data-expand-btn]');
+
+    const setExpanded = (on: boolean) => {
+      frame.toggleAttribute('data-expanded', on);
+      if (backdrop) backdrop.hidden = !on;
+      expandBtn?.setAttribute('aria-pressed', String(on));
+      expandBtn?.setAttribute('title', on ? 'Collapse' : 'Expand');
+      // Stop the page behind scrolling while an overlay is up.
+      document.body.style.overflow = on ? 'hidden' : '';
+    };
+
+    expandBtn?.addEventListener('click', () => setExpanded(!frame.hasAttribute('data-expanded')));
+    backdrop?.addEventListener('click', () => setExpanded(false));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && frame.hasAttribute('data-expanded')) setExpanded(false);
+    });
+  });
+</script>

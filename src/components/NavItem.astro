@@ -1,0 +1,40 @@
+---
+// One row in the mega menu: label plus a one-line description.
+// Deliberately flat and unillustrated — nothing nests below this, and no icons.
+import type { NavLink } from '../data/nav';
+import { url } from '../lib/url';
+
+interface Props {
+  item: NavLink;
+}
+const { item } = Astro.props;
+
+const currentPath = Astro.url.pathname.replace(/\/$/, '');
+const isActive = (href?: string) => {
+  if (!href) return false;
+  const target = url(href).replace(/\/$/, '');
+  return href === '/' ? currentPath === target : currentPath.startsWith(target);
+};
+---
+{/* The anchor wraps both the label and the description, so any text decoration
+    set on it lands on both — which is how the description ended up underlined
+    on whichever page was active. State is carried by a background tint and the
+    label's weight instead; no underlines in this menu. */}
+<li>
+  <a
+    href={url(item.href)}
+    aria-current={isActive(item.href) ? 'page' : undefined}
+    class:list={[
+      // Hover is the stronger tint so the active row still reacts to hover.
+      'block px-4 py-2 no-underline transition-colors hover:bg-current/10',
+      isActive(item.href) && 'bg-current/[0.06]',
+    ]}
+  >
+    <span class:list={['block text-sm', isActive(item.href) ? 'font-semibold' : 'font-medium']}>
+      {item.label}
+    </span>
+    {item.description && (
+      <span class="block text-xs opacity-55 mt-0.5 leading-snug">{item.description}</span>
+    )}
+  </a>
+</li>

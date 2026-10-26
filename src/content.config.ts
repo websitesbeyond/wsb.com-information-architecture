@@ -27,6 +27,7 @@ const sections = defineCollection({
     // Ordering + placement
     page: z.string(), // which page this section belongs to, e.g. "home", "mission"
     order: z.number().default(0),
+    anchor: z.string().optional(), // id for deep links from the nav, e.g. "hosting"
     // Content
     heading: z.string().optional(),
     headingHtml: z.string().optional(), // raw-HTML heading, e.g. a two-line hero with <br>
@@ -55,9 +56,29 @@ const sections = defineCollection({
         })
       )
       .optional(),
+    // Compact icon + label tiles, for listing many short items (trades,
+    // integrations) where a full card would be far too heavy. `icon` is a
+    // Lucide name without the set prefix, e.g. "zap" -> lucide:zap.
+    tiles: z
+      .array(
+        z.object({
+          label: z.string(),
+          icon: z.string(),
+          body: z.string().optional(), // a few words under the label
+          muted: z.boolean().default(false), // for a trailing "and more" tile
+        })
+      )
+      .optional(),
+    // Renders the WorkShowcase component — a browser frame showing curated
+    // static mirrors of real client sites, with a site list beside it.
+    showcase: z.boolean().default(false),
+    // Renders the StatusBoard component — dials, trends, and system status.
+    // The readouts are evidence the standards we build to are holding.
+    statusBoard: z.boolean().default(false),
     cards: z.array(card).optional(),
     buttons: z.array(button).optional(),
     columns: z.number().default(3), // card grid columns
+    masonry: z.boolean().default(false), // flow cards in CSS columns so uneven heights pack tightly
   }),
 });
 

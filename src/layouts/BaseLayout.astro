@@ -1,4 +1,7 @@
 ---
+// Inter is self-hosted (variable weight) rather than pulled from Google Fonts —
+// no network round-trip, so the page never falls back to system sans mid-load.
+import '@fontsource-variable/inter';
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
@@ -15,15 +18,6 @@ const { title = 'Websites Beyond' } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Wireframe preview: keep it out of search engines. -->
     <meta name="robots" content="noindex, nofollow" />
-
-    <!-- Inter — a clean, neutral typeface so the wireframe reads modern.
-         Placeholder only; the designer will choose the real typography. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
 
     <title>{title}</title>
 

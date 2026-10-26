@@ -1,5 +1,7 @@
 ---
 import { navLinks } from '../data/nav';
+import { Icon } from 'astro-icon/components';
+import NavItem from './NavItem.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import { url } from '../lib/url';
 
@@ -11,38 +13,47 @@ const isActive = (href?: string) => {
 };
 ---
 <header class="border-b border-current">
-  <div class="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between gap-4">
+  <div class="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between gap-4">
     <a href={url('/')} class="font-bold">Websites Beyond</a>
 
     <nav class="flex items-center gap-6">
       {navLinks.map((link) =>
-        link.children ? (
+        link.groups ? (
           <details class="group relative">
-            <summary class="text-sm cursor-pointer list-none opacity-70 hover:opacity-100 marker:hidden">
-              {link.label} <span aria-hidden="true">▾</span>
+            <summary class="flex items-center gap-1 text-sm cursor-pointer list-none opacity-70 hover:opacity-100 group-open:opacity-100 marker:hidden">
+              {link.label}
+              <Icon
+                name="lucide:chevron-down"
+                width="14"
+                height="14"
+                class="transition-transform group-open:rotate-180"
+                aria-hidden="true"
+              />
             </summary>
-            <ul class="absolute left-0 mt-2 min-w-max border border-current bg-white dark:bg-black p-2 z-10">
-              {link.children.map((child) => (
-                <li>
-                  <a
-                    href={url(child.href)}
-                    class:list={[
-                      'block px-2 py-1 text-sm',
-                      isActive(child.href) ? 'underline underline-offset-4' : 'opacity-70 hover:opacity-100',
-                    ]}
-                  >
-                    {child.label}
-                  </a>
-                </li>
+            {/* Fixed width rather than min-w-max: the panel shouldn't grow to
+                the length of the longest description. Rows run edge to edge so
+                the hover tint reads as a full row, so horizontal padding lives
+                on the rows, not the panel. */}
+            <div class="absolute left-0 mt-3 w-[23rem] border border-current bg-white dark:bg-black z-10">
+              {link.groups.map((group, gi) => (
+                <div class:list={['py-3', gi > 0 && 'border-t border-current/15']}>
+                  <span class="block px-4 pb-1.5 text-[0.6875rem] uppercase tracking-[0.1em] opacity-50">
+                    {group.label}
+                  </span>
+                  <ul>
+                    {group.items.map((item) => <NavItem item={item} />)}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           </details>
         ) : (
           <a
             href={url(link.href)}
+            aria-current={isActive(link.href) ? 'page' : undefined}
             class:list={[
-              'text-sm',
-              isActive(link.href) ? 'underline underline-offset-4' : 'opacity-70 hover:opacity-100',
+              'text-sm no-underline',
+              isActive(link.href) ? 'font-semibold' : 'opacity-70 hover:opacity-100',
             ]}
           >
             {link.label}

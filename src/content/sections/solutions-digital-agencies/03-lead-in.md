@@ -1,6 +1,6 @@
 ---
 page: solutions-digital-agencies
-order: 2
+order: 3
 heading: The Ripple Effect
 stepsCountdown: true
 steps:

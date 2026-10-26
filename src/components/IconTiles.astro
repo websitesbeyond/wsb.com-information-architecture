@@ -1,0 +1,36 @@
+---
+// A compact grid of icon + label tiles. For listing many short items — trades,
+// integrations, platforms — where a full Card would be far too heavy for the
+// two or three words it holds.
+//
+// Icons are Lucide names via astro-icon, so any tile can be swapped by changing
+// one string in the markdown.
+import { Icon } from 'astro-icon/components';
+
+interface Tile {
+  label: string;
+  icon: string;
+  body?: string;
+  muted?: boolean;
+}
+interface Props {
+  tiles: Tile[];
+}
+const { tiles } = Astro.props;
+---
+{/* 12 tiles, so every breakpoint divides evenly (6/4/3 rows) and no row is left
+    short. If the tile count changes, revisit these. */}
+<ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-8">
+  {tiles.map((tile) => (
+    <li
+      class:list={[
+        'border border-current flex flex-col items-center justify-center gap-2 px-3 py-5 text-center',
+        tile.muted && 'border-dashed opacity-60',
+      ]}
+    >
+      <Icon name={`lucide:${tile.icon}`} width="24" height="24" aria-hidden="true" class="opacity-70" />
+      <span class="text-sm font-medium leading-snug">{tile.label}</span>
+      {tile.body && <span class="text-xs opacity-60 leading-snug">{tile.body}</span>}
+    </li>
+  ))}
+</ul>

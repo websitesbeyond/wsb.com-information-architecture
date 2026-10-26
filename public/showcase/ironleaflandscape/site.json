@@ -1,0 +1,13 @@
+{
+  "name": "Ironleaf Landscape Co.",
+  "slug": "ironleaflandscape",
+  "host": "ironleaflandscape.com",
+  "source": "demo",
+  "captureWidth": 1440,
+  "capturedAt": "2026-10-25",
+  "pages": [
+    { "label": "Home", "path": "/" },
+    { "label": "Portfolio", "path": "/portfolio/" },
+    { "label": "About", "path": "/about/" }
+  ]
+}
